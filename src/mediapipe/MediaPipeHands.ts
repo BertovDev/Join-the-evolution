@@ -2,15 +2,17 @@ import { FilesetResolver, GestureRecognizer } from "@mediapipe/tasks-vision";
 
 const CreateGestureRecognizer = async () => {
   const vision = await FilesetResolver.forVisionTasks(
-    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm "
+    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
   );
 
   const gestureRecognizer = await GestureRecognizer.createFromOptions(vision, {
     baseOptions: {
       modelAssetPath:
         "https://storage.googleapis.com/mediapipe-tasks/gesture_recognizer/gesture_recognizer.task",
+      delegate: "GPU",
     },
-    numHands: 2,
+    runningMode: "VIDEO",
+    numHands: 1,
   });
 
   return gestureRecognizer;

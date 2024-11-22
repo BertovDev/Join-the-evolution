@@ -1,9 +1,12 @@
-import React from "react";
-import { Canvas } from "@react-three/fiber";
-import * as THREE from "three";
+import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
+import Cube from "./components/3D/Cube";
 
-export default function GameManager() {
+interface GameManagerProps {
+  gestures: string | undefined;
+}
+
+export default function GameManager({ gestures }: GameManagerProps) {
   return (
     <Canvas
       camera={{
@@ -13,11 +16,7 @@ export default function GameManager() {
       }}
     >
       <OrbitControls />
-      <mesh position={[0, 0, 0]}>
-        <boxGeometry args={[1, 1, 1]} />
-        <meshStandardMaterial color="white" />
-      </mesh>
-
+      <Cube gestures={gestures} />
       <ambientLight intensity={1} />
     </Canvas>
   );
