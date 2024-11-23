@@ -1,58 +1,103 @@
-import { Category, GestureRecognizer } from "@mediapipe/tasks-vision";
-import React, { useEffect, useState } from "react";
+import {
+  GestureRecognizer,
+  GestureRecognizerResult,
+} from "@mediapipe/tasks-vision";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import CreateGestureRecognizer from "../mediapipe/MediaPipeHands";
-import { Camera as CameraPipe } from "@mediapipe/camera_utils";
 
-export default function Webcam({}) {
+interface WebCamProps {
+  onGesture: (data: string) => void;
+}
+
+export default function Webcam({ onGesture }: WebCamProps) {
   const videoRef = React.createRef<HTMLVideoElement>();
   const [hasCamera, setHasCamera] = useState(true);
-  const [gesture, setGesture] = useState<string>("");
+
+  const recognizerRef = useRef<GestureRecognizer | null>(null);
+  const frameRef = useRef<number | null>();
+  const isRunninRef = useRef<boolean>(false);
 
   const hasMediaDevices = () => {
     return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
   };
 
+  const animate = useCallback(() => {
+    if (videoRef.current && recognizerRef.current) {
+      try {
+        const time: number = Date.now();
+        const result: GestureRecognizerResult =
+          recognizerRef.current.recognizeForVideo(videoRef.current, time);
+
+        if (result.gestures.length > 0) {
+          const gestureCategory: string = result.gestures[0][0].categoryName;
+          onGesture(gestureCategory);
+        }
+
+        if (isRunninRef.current) {
+          frameRef.current = requestAnimationFrame(animate);
+        }
+      } catch (err) {
+        console.log(err);
+        isRunninRef.current = false;
+      }
+    } else {
+      if (isRunninRef.current) {
+        frameRef.current = requestAnimationFrame(animate);
+      }
+    }
+  }, [onGesture]);
+
+  const startAnimation = useCallback(() => {
+    isRunninRef.current = true;
+    if (!frameRef.current) {
+      frameRef.current = requestAnimationFrame(animate);
+    }
+  }, [animate]);
+
+  const stopAnimation = useCallback(() => {
+    isRunninRef.current = false;
+    if (frameRef.current) {
+      cancelAnimationFrame(frameRef.current);
+      frameRef.current = null;
+    }
+  }, []);
+
   useEffect(() => {
-    const handleGesturesRecognizer = async () => {
-      if (videoRef.current) {
-        const gestureRecognizer: GestureRecognizer =
-          await CreateGestureRecognizer();
+    startAnimation();
 
-        const camera = new CameraPipe(videoRef.current, {
-          onFrame: async () => {
-            if (videoRef.current) {
-              const time: number = Date.now();
-
-              const gestures: Category[][] =
-                gestureRecognizer.recognizeForVideo(
-                  videoRef.current,
-                  time
-                ).gestures;
-
-              if (gestures && gestures.length > 0) {
-                const category: string = gestures[0][0].categoryName;
-                console.log(category);
-                // onGestureRecognition(category);
-              }
-            }
-          },
-        });
-        camera.start();
+    return () => {
+      stopAnimation();
+      if (frameRef.current) {
+        recognizerRef.current?.close();
+        recognizerRef.current = null;
       }
     };
+  }, [startAnimation, stopAnimation]);
 
-    const EnableCamera = async () => {
+  useEffect(() => {
+    const enableCamera = async () => {
       if (!hasMediaDevices()) return;
-      // const stream: MediaStream = await navigator.mediaDevices.getUserMedia({
-      //   video: true,
-      // });
+
+      const steam: MediaStream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+      });
+
       if (videoRef.current !== undefined && videoRef.current !== null) {
-        // videoRef.current.srcObject = stream;
-        await handleGesturesRecognizer();
+        videoRef.current.srcObject = steam;
+        const recognizer = await CreateGestureRecognizer();
+        recognizerRef.current = recognizer;
+        videoRef.current.play();
       }
     };
 
-    EnableCamera();
+    enableCamera();
+
+    return () => {
+      if (videoRef.current?.srcObject) {
+        const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
+        tracks.forEach((track) => track.stop());
+      }
+    };
   }, []);
 
   return (

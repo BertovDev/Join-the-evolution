@@ -12,9 +12,9 @@ export default function Cube({ gestures }: CubeProps) {
   useFrame(() => {
     if (cubeRef.current) {
       if (gestures === "Open_Palm") {
-        cubeRef.current.position.z -= 0.01;
+        cubeRef.current.position.z -= 0.11;
       } else if (gestures === "Closed_Fist") {
-        cubeRef.current.position.z += 0.01;
+        cubeRef.current.position.z += 0.11;
       }
     }
   });
