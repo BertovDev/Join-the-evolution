@@ -5,23 +5,27 @@ import vertexShader from "../../shaders/vertex.glsl";
 import fragmentShader from "../../shaders/fragment.glsl";
 import { useControls } from "leva";
 import * as THREE from "three";
+import { GestureResult } from "../../types";
 
 interface CubeProps {
-  gestures: string | undefined;
+  gesture: GestureResult | null;
 }
 
-export default function Cube({ gestures }: CubeProps) {
+const Cube: React.FC<CubeProps> = ({ gesture }: CubeProps) => {
   const cubeRef = useRef<Mesh>(null!);
 
-  const { amplitude, frequency, colorB } = useControls({
+  const { amplitude, frequency, timeScale } = useControls({
     amplitude: {
       value: -0.2,
     },
     frequency: {
-      value: 1,
+      value: 0.2,
     },
-    colorB: {
-      value: new THREE.Color("#9c1f32"),
+    timeScale: {
+      value: 0.1,
+      min: -1,
+      max: 2,
+      step: 0.1,
     },
   });
 
@@ -39,25 +43,24 @@ export default function Cube({ gestures }: CubeProps) {
       uAmplitude: {
         value: amplitude,
       },
-      uFrequency: {
+      uDisplacement: {
         value: frequency,
+      },
+      uTimeScale: {
+        value: timeScale,
       },
     }),
     []
   );
 
   useFrame((state) => {
-    if (cubeRef.current) {
-      if (gestures === "Open_Palm") {
-        cubeRef.current.position.z -= 0.11;
-      } else if (gestures === "Closed_Fist") {
-        uniforms.uFrequency.value += 0.04;
-      }
+    if (gesture?.gesture === "Close_Fist") {
+      uniforms.uTimeScale.value += 1.6;
     }
-
-    // uniforms.uFrequency.value = frequency;
+    uniforms.uDisplacement.value = frequency;
     uniforms.uAmplitude.value = amplitude;
-    // uniforms.uColorB.value = colorB;
+    uniforms.uTime.value = state.clock.getElapsedTime();
+    uniforms.uTimeScale.value = timeScale;
   });
 
   return (
@@ -75,4 +78,6 @@ export default function Cube({ gestures }: CubeProps) {
       />
     </mesh>
   );
-}
+};
+
+export default React.memo(Cube);

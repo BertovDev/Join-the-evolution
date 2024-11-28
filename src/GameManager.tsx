@@ -1,12 +1,17 @@
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import Cube from "./components/3D/Cube";
+import { GestureResult } from "./types";
+import React from "react";
+import { Particles } from "./components/3D/SparkleParticles";
 
 interface GameManagerProps {
-  gestures: string | undefined;
+  gesture: GestureResult | null;
 }
 
-export default function GameManager({ gestures }: GameManagerProps) {
+const GameManager: React.FC<GameManagerProps> = ({
+  gesture,
+}: GameManagerProps) => {
   return (
     <Canvas
       camera={{
@@ -16,8 +21,11 @@ export default function GameManager({ gestures }: GameManagerProps) {
       }}
     >
       <OrbitControls />
-      <Cube gestures={gestures} />
+      <Cube gesture={gesture} />
+      <Particles />
       <ambientLight intensity={1} />
     </Canvas>
   );
-}
+};
+
+export default React.memo(GameManager);

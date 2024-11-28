@@ -1,103 +1,54 @@
-import {
-  GestureRecognizer,
-  GestureRecognizerResult,
-} from "@mediapipe/tasks-vision";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import CreateGestureRecognizer from "../mediapipe/MediaPipeHands";
 
 interface WebCamProps {
-  onGesture: (data: string) => void;
+  onFrame: (videoFrame: HTMLVideoElement, timestamp: number) => void;
 }
 
-export default function Webcam({ onGesture }: WebCamProps) {
+const Webcam: React.FC<WebCamProps> = ({ onFrame }) => {
   const videoRef = React.createRef<HTMLVideoElement>();
+  const lastVideoTime = useRef<number>(-1);
   const [hasCamera, setHasCamera] = useState(true);
-
-  const recognizerRef = useRef<GestureRecognizer | null>(null);
-  const frameRef = useRef<number | null>();
-  const isRunninRef = useRef<boolean>(false);
 
   const hasMediaDevices = () => {
     return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
   };
 
-  const animate = useCallback(() => {
-    if (videoRef.current && recognizerRef.current) {
-      try {
-        const time: number = Date.now();
-        const result: GestureRecognizerResult =
-          recognizerRef.current.recognizeForVideo(videoRef.current, time);
+  const processFrame = useCallback(() => {
+    if (videoRef.current && videoRef.current.currentTime > 4) {
+      const currentTime = videoRef.current.currentTime;
 
-        if (result.gestures.length > 0) {
-          const gestureCategory: string = result.gestures[0][0].categoryName;
-          onGesture(gestureCategory);
-        }
-
-        if (isRunninRef.current) {
-          frameRef.current = requestAnimationFrame(animate);
-        }
-      } catch (err) {
-        console.log(err);
-        isRunninRef.current = false;
-      }
-    } else {
-      if (isRunninRef.current) {
-        frameRef.current = requestAnimationFrame(animate);
+      if (currentTime > lastVideoTime.current) {
+        lastVideoTime.current = currentTime;
+        onFrame(videoRef.current, currentTime * 1000);
       }
     }
-  }, [onGesture]);
 
-  const startAnimation = useCallback(() => {
-    isRunninRef.current = true;
-    if (!frameRef.current) {
-      frameRef.current = requestAnimationFrame(animate);
-    }
-  }, [animate]);
-
-  const stopAnimation = useCallback(() => {
-    isRunninRef.current = false;
-    if (frameRef.current) {
-      cancelAnimationFrame(frameRef.current);
-      frameRef.current = null;
-    }
-  }, []);
+    requestAnimationFrame(processFrame);
+  }, [onFrame]);
 
   useEffect(() => {
-    startAnimation();
+    requestAnimationFrame(processFrame);
+  }, [processFrame]);
 
-    return () => {
-      stopAnimation();
-      if (frameRef.current) {
-        recognizerRef.current?.close();
-        recognizerRef.current = null;
-      }
-    };
-  }, [startAnimation, stopAnimation]);
+  const initWebcam = async () => {
+    if (!hasMediaDevices) return;
 
-  useEffect(() => {
-    const enableCamera = async () => {
-      if (!hasMediaDevices()) return;
+    try {
+      if (videoRef.current) {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+        });
 
-      const steam: MediaStream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-      });
-
-      if (videoRef.current !== undefined && videoRef.current !== null) {
-        videoRef.current.srcObject = steam;
-        const recognizer = await CreateGestureRecognizer();
-        recognizerRef.current = recognizer;
+        videoRef.current.srcObject = stream;
         videoRef.current.play();
       }
-    };
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
-    enableCamera();
-
-    return () => {
-      if (videoRef.current?.srcObject) {
-        const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
-        tracks.forEach((track) => track.stop());
-      }
-    };
+  useEffect(() => {
+    initWebcam();
   }, []);
 
   return (
@@ -106,11 +57,10 @@ export default function Webcam({ onGesture }: WebCamProps) {
         <video ref={videoRef} id="webcam" autoPlay playsInline muted></video>
       </div>
       <div className="flex flex-col justify-center  items-center">
-        {/* <button className="" onClick={async () => await handleWebCam()}>
-          Enable Webcam
-        </button> */}
         {!hasCamera && <span className="text-red-600">Camera not found</span>}
       </div>
     </div>
   );
-}
+};
+
+export default React.memo(Webcam);
