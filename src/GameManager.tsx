@@ -1,4 +1,4 @@
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import Cube from "./components/3D/Cube";
 import { GestureResult } from "./types";
@@ -26,7 +26,7 @@ const GameManager: React.FC<GameManagerProps> = ({
       }}
     >
       <OrbitControls />
-      <Cube gesture={gesture} activate={activate} />
+      <Cube gesture={gesture} />
       <Particles gesture={gesture} activate={activate} />
       <ambientLight intensity={1} />
     </Canvas>
