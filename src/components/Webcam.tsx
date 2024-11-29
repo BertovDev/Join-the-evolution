@@ -37,7 +37,7 @@ const Webcam: React.FC<WebCamProps> = ({ onFrame }) => {
         const imageBitmap: ImageBitmap | undefined =
           offscreen.current?.transferToImageBitmap();
 
-        onFrame(imageBitmap, currentTime * 1000);
+        onFrame(imageBitmap, performance.now());
       }
     }
 
