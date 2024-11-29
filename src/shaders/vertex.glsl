@@ -3,8 +3,10 @@
   varying float vDisplacement;
   
   uniform float uTimeScale;
+  uniform float uNoiseScale;
   uniform float uDisplacement;
   uniform float uTime;
+  uniform float uAmplitude;
   
 // Simple noise function
   vec3 mod289(vec3 x) {
@@ -104,22 +106,26 @@
     }
     return res;
   }
+  
 
   void main() {
     vNormal = normal;
     vec3 pos = position;
     
     // Create sharper, more crystalline displacement
-    float noiseScale = 2.5;
+    float noiseScale = uNoiseScale;
     float timeScale = uTimeScale;
     
     // Combine different noise patterns for more complex fragmentation
     float noise1 = snoise(pos * noiseScale + uTime * timeScale);
-    float noise2 = voronoi(pos * 4.0 + uTime * timeScale * 0.5);
-    float noise3 = snoise(pos * 6.0 - uTime * timeScale * 0.3);
+    float noise2 = voronoi(pos * 6.0 + uTime * timeScale * 5.0);
+    float noise3 = snoise(pos * 8.0 - uTime * timeScale * 0.3);
     
     // Create smoother, more rounded displacement
-    float displacement = (noise1 * 0.2 + smoothstep(0.3, 0.7, noise2) * 0.1 + smoothstep(0.6, 0.8, noise3) * 0.15) * 0.7;
+    float displacement = (noise1 * 0.2 + smoothstep(1.0, 0.1, noise2) * 0.1 + smoothstep(0.6, 0.8, noise3) * 0.15) * uAmplitude;
+   
+
+
     vDisplacement = displacement;
     
     // Apply displacement along normal

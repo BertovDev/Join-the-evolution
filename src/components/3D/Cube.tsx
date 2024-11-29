@@ -9,12 +9,13 @@ import { GestureResult } from "../../types";
 
 interface CubeProps {
   gesture: GestureResult | null;
+  activate: boolean;
 }
 
-const Cube: React.FC<CubeProps> = ({ gesture }: CubeProps) => {
+const Cube: React.FC<CubeProps> = ({ gesture, activate }: CubeProps) => {
   const cubeRef = useRef<Mesh>(null!);
 
-  const { amplitude, frequency, timeScale } = useControls({
+  const { amplitude, frequency, timeScale, noiseScale } = useControls({
     amplitude: {
       value: -0.2,
     },
@@ -25,6 +26,12 @@ const Cube: React.FC<CubeProps> = ({ gesture }: CubeProps) => {
       value: 0.1,
       min: -1,
       max: 2,
+      step: 0.1,
+    },
+    noiseScale: {
+      value: 2.5,
+      min: -4,
+      max: 5,
       step: 0.1,
     },
   });
@@ -49,18 +56,26 @@ const Cube: React.FC<CubeProps> = ({ gesture }: CubeProps) => {
       uTimeScale: {
         value: timeScale,
       },
+      uNoiseScale: {
+        value: noiseScale,
+      },
     }),
     []
   );
 
   useFrame((state) => {
-    if (gesture?.gesture === "Close_Fist") {
-      uniforms.uTimeScale.value += 1.6;
+    if (gesture?.gesture === "Close_Fist" && uniforms.uAmplitude.value < 5.0) {
+      uniforms.uAmplitude.value += 0.05;
+      uniforms.uTimeScale.value += 0.01;
     }
+
+    // if (gesture?.gesture === "Close_Fist") {
+    //   uniforms.uTimeScale.value += 1.6;
+    // }
     uniforms.uDisplacement.value = frequency;
-    uniforms.uAmplitude.value = amplitude;
+    // uniforms.uAmplitude.value = amplitude;
     uniforms.uTime.value = state.clock.getElapsedTime();
-    uniforms.uTimeScale.value = timeScale;
+    // uniforms.uTimeScale.value = timeScale;
   });
 
   return (

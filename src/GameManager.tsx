@@ -4,6 +4,7 @@ import Cube from "./components/3D/Cube";
 import { GestureResult } from "./types";
 import React from "react";
 import { Particles } from "./components/3D/SparkleParticles";
+import { useControls } from "leva";
 
 interface GameManagerProps {
   gesture: GestureResult | null;
@@ -12,6 +13,10 @@ interface GameManagerProps {
 const GameManager: React.FC<GameManagerProps> = ({
   gesture,
 }: GameManagerProps) => {
+  const { activate } = useControls({
+    activate: false,
+  });
+
   return (
     <Canvas
       camera={{
@@ -21,8 +26,8 @@ const GameManager: React.FC<GameManagerProps> = ({
       }}
     >
       <OrbitControls />
-      <Cube gesture={gesture} />
-      <Particles />
+      <Cube gesture={gesture} activate={activate} />
+      <Particles gesture={gesture} activate={activate} />
       <ambientLight intensity={1} />
     </Canvas>
   );

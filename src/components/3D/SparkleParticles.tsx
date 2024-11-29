@@ -2,17 +2,33 @@ import * as THREE from "three";
 import React, { createRef, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useControls } from "leva";
+import { GestureResult } from "../../types";
 
-function Particles() {
-  const { pulse } = useControls({
+type ParticleProps = {
+  gesture: GestureResult | null;
+  activate: boolean;
+};
+
+const Particles: React.FC<ParticleProps> = ({
+  gesture,
+  activate,
+}: ParticleProps) => {
+  const { pulse, velocity } = useControls({
     pulse: false,
+    velocity: {
+      value: 1,
+      max: 2,
+      step: 0.1,
+    },
   });
 
   const particlesRef = createRef<THREE.Points>();
   const [pulsing, setPulsing] = useState<boolean>(false);
   const [scale, setScale] = useState<number>(1);
 
-  const particleCount = 400;
+  const clock = useRef<THREE.Clock>(new THREE.Clock(false));
+
+  const particleCount = 1000;
 
   let positions = [];
 
@@ -29,20 +45,29 @@ function Particles() {
   let floatArray = new Float32Array(positions);
 
   useFrame((state) => {
+    const elapse = state.clock.getElapsedTime();
+
     if (particlesRef.current) {
-      particlesRef.current.rotation.x = state.clock.getElapsedTime() * 0.05;
-      particlesRef.current.rotation.y = state.clock.getElapsedTime() * 0.03;
+      if (gesture?.gesture === "Open_Palm") {
+        particlesRef.current.rotation.x = elapse * velocity * 2;
+        particlesRef.current.rotation.y = elapse * velocity * 2;
+      } else {
+        particlesRef.current.rotation.x = elapse * velocity;
+        particlesRef.current.rotation.y = elapse * velocity;
+      }
 
       // Add pulsing effect
-      if (pulsing) {
-        const scale = 1 + 0.08 + Math.sin(Date.now() / 1000) * 2.0;
-        // scale = 0.08 + 0.01;
-        setScale(() => scale);
-        console.log(scale);
-        particlesRef.current.scale.set(scale, scale, scale);
-        if (particlesRef.current.scale.x > 2.5) {
-          setPulsing(false);
+      if (
+        gesture?.gesture === "Close_Fist" &&
+        particlesRef.current.scale.x < 2.5
+      ) {
+        if (clock.current.running === false) {
+          clock.current.start();
         }
+
+        const scale = 1 - Math.sin(clock.current.getElapsedTime()) * 2.0;
+        setScale((prev) => scale);
+        particlesRef.current.scale.set(scale, scale, scale);
       }
     }
   });
@@ -67,6 +92,6 @@ function Particles() {
       />
     </points>
   );
-}
+};
 
 export { Particles };

@@ -1,8 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
-import {
-  CreateGestureRecognizer,
-  handleGesture,
-} from "../mediapipe/MediaPipeHands";
+import { useCallback, useEffect, useRef, useState } from "react";
+
 import Webcam from "./Webcam";
 import { GestureRecognizer } from "@mediapipe/tasks-vision";
 import { GestureResult } from "../types";
@@ -12,11 +9,24 @@ export default function GestureRecognizerComponent() {
   const [recognizer, setRecognizer] = useState<GestureRecognizer | null>(null);
   const [gesture, setGesture] = useState<GestureResult | null>(null);
 
+  const workerRef = useRef<Worker | null>(null);
+
   useEffect(() => {
     const init = async () => {
+      workerRef.current = new Worker(new URL("./worker.ts", import.meta.url));
+
       try {
-        const recognizer = await CreateGestureRecognizer();
-        setRecognizer(recognizer);
+        // const recognizer = await CreateGestureRecognizer();
+        // setRecognizer(recognizer);
+        if (workerRef.current) {
+          workerRef.current.postMessage({ action: "init" });
+          workerRef.current.onmessage = function (event: MessageEvent) {
+            const result = event.data as GestureResult;
+            if (result.gesture === "Close_Fist") {
+              console.log(result);
+            }
+          };
+        }
       } catch (err) {
         console.log(err);
       }
@@ -25,26 +35,35 @@ export default function GestureRecognizerComponent() {
     init();
 
     return () => {
-      if (recognizer) {
-        recognizer.close();
+      const worker = workerRef.current;
+      console.log(worker);
+      if (worker) {
+        worker.terminate();
       }
     };
   }, []);
 
   const processFrame = useCallback(
-    (video: HTMLVideoElement, timestamp: number) => {
-      if (!recognizer) return;
+    (video: ImageData | null | undefined, timestamp: number) => {
+      // if (!recognizer) return;
 
       try {
-        const result: GestureResult = handleGesture(
-          recognizer,
-          video,
-          timestamp
-        );
+        const worker = workerRef.current;
+        worker?.postMessage({
+          action: "detectForVideo",
+          frame: video,
+          timestamp: timestamp,
+        });
 
-        if (result) {
-          setGesture(result);
-        }
+        // const result: GestureResult = handleGesture(
+        //   recognizer,
+        //   video,
+        //   timestamp
+        // );
+
+        // if (result) {
+        //   setGesture(result);
+        // }
       } catch (err) {
         console.log(err);
       }
