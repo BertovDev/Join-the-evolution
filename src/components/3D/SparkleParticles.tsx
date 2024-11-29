@@ -59,7 +59,7 @@ const Particles: React.FC<ParticleProps> = ({
       // Add pulsing effect
       if (
         gesture?.gesture === "Close_Fist" &&
-        particlesRef.current.scale.x < 2.5
+        particlesRef.current.scale.x < 3.0
       ) {
         if (clock.current.running === false) {
           clock.current.start();

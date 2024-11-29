@@ -19,13 +19,21 @@ export default function GestureRecognizerComponent() {
         // const recognizer = await CreateGestureRecognizer();
         // setRecognizer(recognizer);
         if (workerRef.current) {
-          workerRef.current.postMessage({ action: "init" });
+          // console.log("Init");
+
+          // workerRef.current.postMessage({ action: "init" });
+
           workerRef.current.onmessage = function (event: MessageEvent) {
             const result = event.data as GestureResult;
-            if (result.gesture === "Close_Fist") {
-              console.log(result);
+            if (
+              result.gesture === "Close_Fist" ||
+              result.gesture === "Open_Palm"
+            ) {
+              setGesture(result);
             }
           };
+
+          workerRef.current.postMessage({ action: "init" });
         }
       } catch (err) {
         console.log(err);
@@ -44,11 +52,12 @@ export default function GestureRecognizerComponent() {
   }, []);
 
   const processFrame = useCallback(
-    (video: ImageData | null | undefined, timestamp: number) => {
+    (video: ImageBitmap | undefined, timestamp: number) => {
       // if (!recognizer) return;
 
       try {
         const worker = workerRef.current;
+
         worker?.postMessage({
           action: "detectForVideo",
           frame: video,

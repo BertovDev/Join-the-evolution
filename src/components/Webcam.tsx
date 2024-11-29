@@ -7,16 +7,14 @@ import React, {
 } from "react";
 
 interface WebCamProps {
-  onFrame: (
-    videoFrame: ImageData | null | undefined,
-    timestamp: number
-  ) => void;
+  onFrame: (videoFrame: ImageBitmap | undefined, timestamp: number) => void;
 }
 
 const Webcam: React.FC<WebCamProps> = ({ onFrame }) => {
   const videoRef = React.createRef<HTMLVideoElement>();
   const canvasRef = React.createRef<HTMLCanvasElement>();
-  const context = useRef<CanvasRenderingContext2D | null>();
+  const offscreen = useRef<OffscreenCanvas>();
+  const context = useRef<OffscreenCanvasRenderingContext2D | null>();
   const lastVideoTime = useRef<number>(-1);
   const [hasCamera, setHasCamera] = useState(true);
 
@@ -27,7 +25,7 @@ const Webcam: React.FC<WebCamProps> = ({ onFrame }) => {
   const processFrame = useCallback(() => {
     if (
       videoRef.current &&
-      canvasRef.current &&
+      offscreen.current &&
       videoRef.current.currentTime > 4
     ) {
       const currentTime = videoRef.current.currentTime;
@@ -35,22 +33,11 @@ const Webcam: React.FC<WebCamProps> = ({ onFrame }) => {
       if (currentTime > lastVideoTime.current) {
         lastVideoTime.current = currentTime;
 
-        context.current?.drawImage(
-          videoRef.current,
-          0,
-          0,
-          canvasRef.current.width,
-          canvasRef.current.height
-        );
-        const frame: ImageData | null | undefined =
-          context.current?.getImageData(
-            0,
-            0,
-            canvasRef.current.width,
-            canvasRef.current.height
-          );
+        context.current?.drawImage(videoRef.current, 0, 0);
+        const imageBitmap: ImageBitmap | undefined =
+          offscreen.current?.transferToImageBitmap();
 
-        onFrame(frame, currentTime * 1000);
+        onFrame(imageBitmap, currentTime * 1000);
       }
     }
 
@@ -72,12 +59,25 @@ const Webcam: React.FC<WebCamProps> = ({ onFrame }) => {
 
         videoRef.current.srcObject = stream;
         videoRef.current.play();
-        context.current = canvasRef.current?.getContext("2d", {
-          willReadFrequently: true,
-        });
+        // offscreen.current = canvasRef.current?.transferControlToOffscreen();
+
+        videoRef.current.addEventListener("loadeddata", createOffscreen);
       }
     } catch (err) {
       console.log(err);
+    }
+  };
+
+  const createOffscreen = () => {
+    if (videoRef.current) {
+      offscreen.current = new OffscreenCanvas(
+        videoRef.current?.videoWidth,
+        videoRef.current?.videoHeight
+      );
+
+      context.current = offscreen.current.getContext("2d", {
+        willReadFrequently: true,
+      });
     }
   };
 
@@ -89,7 +89,7 @@ const Webcam: React.FC<WebCamProps> = ({ onFrame }) => {
     <div className="h-1/4 absolute top-0 left-0 z-10">
       <div className="relative top-0 bottom-0 w-1/5 h-1/5 bg-red-200">
         <video ref={videoRef} id="webcam" autoPlay playsInline muted></video>
-        <canvas ref={canvasRef} id="canvas" className="hidden"></canvas>
+        {/* <canvas ref={canvasRef} id="canvas" className=""></canvas> */}
       </div>
       <div className="flex flex-col justify-center  items-center">
         {!hasCamera && <span className="text-red-600">Camera not found</span>}

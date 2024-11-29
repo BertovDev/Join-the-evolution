@@ -12,8 +12,6 @@ import { GestureRecognizer } from "@mediapipe/tasks-vision";
       const data = event.data;
 
       if (data.action === "init") {
-        console.log("init");
-
         if (!recognizer) {
           const recognizerIsntance = await module1.CreateGestureRecognizer();
 
