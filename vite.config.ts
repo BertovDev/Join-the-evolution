@@ -4,6 +4,9 @@ import glsl from "vite-plugin-glsl";
 
 // https://vite.dev/config/
 export default defineConfig({
+  worker: {
+    format: "es",
+  },
   plugins: [
     react(),
     glsl({

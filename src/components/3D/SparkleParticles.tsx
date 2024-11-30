@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import React, { createRef, useRef, useState } from "react";
+import React, { createRef, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useControls } from "leva";
 import { GestureResult } from "../../types";
@@ -9,12 +9,8 @@ type ParticleProps = {
   activate: boolean;
 };
 
-const Particles: React.FC<ParticleProps> = ({
-  gesture,
-  activate,
-}: ParticleProps) => {
-  const { pulse, velocity } = useControls({
-    pulse: false,
+const Particles: React.FC<ParticleProps> = ({ gesture }: ParticleProps) => {
+  const { velocity } = useControls({
     velocity: {
       value: 1,
       max: 2,
@@ -23,8 +19,6 @@ const Particles: React.FC<ParticleProps> = ({
   });
 
   const particlesRef = createRef<THREE.Points>();
-  const [pulsing, setPulsing] = useState<boolean>(false);
-  const [scale, setScale] = useState<number>(1);
 
   const clock = useRef<THREE.Clock>(new THREE.Clock(false));
 
@@ -66,7 +60,6 @@ const Particles: React.FC<ParticleProps> = ({
         }
 
         const scale = 1 - Math.sin(clock.current.getElapsedTime()) * 2.0;
-        setScale((prev) => scale);
         particlesRef.current.scale.set(scale, scale, scale);
       }
     }

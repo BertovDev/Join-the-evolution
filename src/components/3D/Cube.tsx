@@ -1,6 +1,6 @@
-import { MeshProps, useFrame } from "@react-three/fiber";
-import React, { createRef, useMemo, useRef } from "react";
-import { Color, Mesh } from "three";
+import { useFrame } from "@react-three/fiber";
+import React, { useMemo, useRef } from "react";
+import { Mesh } from "three";
 import vertexShader from "../../shaders/vertex.glsl";
 import fragmentShader from "../../shaders/fragment.glsl";
 import { useControls } from "leva";
@@ -9,10 +9,9 @@ import { GestureResult } from "../../types";
 
 interface CubeProps {
   gesture: GestureResult | null;
-  activate: boolean;
 }
 
-const Cube: React.FC<CubeProps> = ({ gesture, activate }: CubeProps) => {
+const Cube: React.FC<CubeProps> = ({ gesture }: CubeProps) => {
   const cubeRef = useRef<Mesh>(null!);
 
   const { amplitude, frequency, timeScale, noiseScale } = useControls({

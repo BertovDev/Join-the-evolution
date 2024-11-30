@@ -1,10 +1,4 @@
-import React, {
-  Component,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 interface WebCamProps {
   onFrame: (videoFrame: ImageBitmap | undefined, timestamp: number) => void;
@@ -12,7 +6,6 @@ interface WebCamProps {
 
 const Webcam: React.FC<WebCamProps> = ({ onFrame }) => {
   const videoRef = React.createRef<HTMLVideoElement>();
-  const canvasRef = React.createRef<HTMLCanvasElement>();
   const offscreen = useRef<OffscreenCanvas>();
   const context = useRef<OffscreenCanvasRenderingContext2D | null>();
   const lastVideoTime = useRef<number>(-1);
@@ -56,6 +49,8 @@ const Webcam: React.FC<WebCamProps> = ({ onFrame }) => {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: true,
         });
+
+        setHasCamera(true);
 
         videoRef.current.srcObject = stream;
         videoRef.current.play();
