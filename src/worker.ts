@@ -32,7 +32,6 @@ import { GestureRecognizer } from "@mediapipe/tasks-vision";
 
           recognizer = recognizerIsntance;
           console.log("Created new recognizer", recognizer);
-          self.postMessage("Init done");
         } else {
           console.log("recognizer is not set");
         }

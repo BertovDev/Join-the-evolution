@@ -23,9 +23,7 @@ export default function GestureRecognizerComponent() {
           workerRef.current.addEventListener(
             "message",
             (event: MessageEvent) => {
-              const result = event.data;
-
-              console.log(result);
+              const result = event.data as GestureResult;
 
               if (
                 result.gesture === "Close_Fist" ||
@@ -60,23 +58,14 @@ export default function GestureRecognizerComponent() {
         if (workerRef.current === null) {
           console.log("Is null");
         }
-        // const worker = workerRef.current;
-        // worker?.postMessage({
-        //   action: "detectForVideo",
-        //   frame: video,
-        //   timestamp: timestamp,
-        // });
-        // const result: GestureResult = handleGesture(
-        //   recognizer,
-        //   video,
-        //   timestamp
-        // );
-        // if (result) {
-        //   setGesture(result);
-        // }
+        const worker = workerRef.current;
+        worker?.postMessage({
+          action: "detectForVideo",
+          frame: video,
+          timestamp: timestamp,
+        });
       } catch (err) {
         console.log(err);
-        console.log(video, timestamp);
       }
     },
     [recognizer]
