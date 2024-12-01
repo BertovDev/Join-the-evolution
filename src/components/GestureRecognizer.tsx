@@ -28,15 +28,28 @@ export default function GestureRecognizerComponent() {
 
           // workerRef.current.postMessage({ action: "init" });
 
-          workerRef.current.onmessage = function (event: MessageEvent) {
-            const result = event.data as GestureResult;
-            if (
-              result.gesture === "Close_Fist" ||
-              result.gesture === "Open_Palm"
-            ) {
-              setGesture(result);
+          workerRef.current.addEventListener(
+            "message",
+            (event: MessageEvent) => {
+              const result = event.data as GestureResult;
+              if (
+                result.gesture === "Close_Fist" ||
+                result.gesture === "Open_Palm"
+              ) {
+                setGesture(result);
+              }
             }
-          };
+          );
+
+          // workerRef.current.onmessage = function (event: MessageEvent) {
+          //   const result = event.data as GestureResult;
+          //   if (
+          //     result.gesture === "Close_Fist" ||
+          //     result.gesture === "Open_Palm"
+          //   ) {
+          //     setGesture(result);
+          //   }
+          // };
 
           workerRef.current.postMessage({ action: "init" });
         }
