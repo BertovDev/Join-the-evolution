@@ -3,28 +3,24 @@ import { GestureRecognizer } from "@mediapipe/tasks-vision";
 (async () => {
   console.log("Worker");
   try {
-    // const [module1] = await Promise.all([
-    //   import("./mediapipe/MediaPipeHands"),
-    //   import("@mediapipe/tasks-vision"),
-    // ]);
+    const [module1] = await Promise.all([
+      import("./mediapipe/MediaPipeHands"),
+      import("@mediapipe/tasks-vision"),
+    ]);
 
-    const { CreateGestureRecognizer, handleGesture } = await import(
-      "./mediapipe/MediaPipeHands"
-    );
+    // const { CreateGestureRecognizer, handleGesture } = await import(
+    //   "./mediapipe/MediaPipeHands"
+    // );
 
     let recognizer: GestureRecognizer | null = null;
-
-    console.log(recognizer);
 
     self.onmessage = async function (event: MessageEvent) {
       const data = event.data;
 
-      console.log("dAts" + data);
-
       if (data.action === "init") {
         console.log("init");
         if (!recognizer) {
-          const recognizerIsntance = await CreateGestureRecognizer();
+          const recognizerIsntance = await module1.CreateGestureRecognizer();
 
           if (!recognizerIsntance) {
             throw new Error("Error on recognizer instance creation.");
@@ -37,7 +33,11 @@ import { GestureRecognizer } from "@mediapipe/tasks-vision";
         }
       } else if (data.action === "detectForVideo") {
         if (recognizer) {
-          const result = handleGesture(recognizer, data.frame, data.timestamp);
+          const result = module1.handleGesture(
+            recognizer,
+            data.frame,
+            data.timestamp
+          );
 
           self.postMessage(result);
         }
