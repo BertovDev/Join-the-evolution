@@ -71,6 +71,9 @@ export default function GestureRecognizerComponent() {
       // if (!recognizer) return;
 
       try {
+        if (workerRef.current === null) {
+          console.log("Is null");
+        }
         // const worker = workerRef.current;
         // worker?.postMessage({
         //   action: "detectForVideo",
