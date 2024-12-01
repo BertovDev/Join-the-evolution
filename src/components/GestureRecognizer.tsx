@@ -27,12 +27,12 @@ export default function GestureRecognizerComponent() {
 
               console.log(result);
 
-              // if (
-              //   result.gesture === "Close_Fist" ||
-              //   result.gesture === "Open_Palm"
-              // ) {
-              //   setGesture(result);
-              // }
+              if (
+                result.gesture === "Close_Fist" ||
+                result.gesture === "Open_Palm"
+              ) {
+                setGesture(result);
+              }
             }
           );
         }
