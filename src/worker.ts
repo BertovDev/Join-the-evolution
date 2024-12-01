@@ -14,7 +14,7 @@ import { GestureRecognizer } from "@mediapipe/tasks-vision";
 
     let recognizer: GestureRecognizer | null = null;
 
-    self.onmessage = async function (event: MessageEvent) {
+    self.onmessage = async (event: MessageEvent) => {
       const data = event.data;
 
       if (data.action === "init") {

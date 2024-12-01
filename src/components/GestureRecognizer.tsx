@@ -1,18 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import Webcam from "./Webcam";
-import { GestureRecognizer } from "@mediapipe/tasks-vision";
 import { GestureResult } from "../types";
 import GameManager from "../GameManager";
 
 export default function GestureRecognizerComponent() {
-  const [recognizer, setRecognizer] = useState<GestureRecognizer | null>(null);
   const [gesture, setGesture] = useState<GestureResult | null>(null);
 
   const workerRef = useRef<Worker | null>(null);
 
   useEffect(() => {
-    setRecognizer(null);
     const init = () => {
       workerRef.current = new Worker(new URL("../worker.ts", import.meta.url));
       try {
@@ -68,7 +65,7 @@ export default function GestureRecognizerComponent() {
         console.log(err);
       }
     },
-    [recognizer]
+    []
   );
 
   return (
