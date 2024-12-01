@@ -61,6 +61,7 @@ const Webcam: React.FC<WebCamProps> = ({ onFrame }) => {
       }
     } catch (err) {
       console.log(err);
+      setHasCamera(false);
     }
   };
 
@@ -77,21 +78,15 @@ const Webcam: React.FC<WebCamProps> = ({ onFrame }) => {
     }
   };
 
-  useEffect(() => {
-    if (test.current === true) {
-      initWebcam();
-    } else {
-      console.log("ñao");
-    }
-  }, []);
-
   return (
-    <div className="h-1/4 absolute top-0 left-0 z-10">
+    <div className="h-1/4 absolute top-0 left-0 z-10  pl-2">
       <div className="relative top-0 bottom-0 w-1/5 h-1/5 bg-red-200">
         <video ref={videoRef} id="webcam" autoPlay playsInline muted></video>
-        {/* <canvas ref={canvasRef} id="canvas" className=""></canvas> */}
       </div>
-      <div className="flex flex-col justify-center  items-center">
+      <div className="flex flex-col justify-center  items-start">
+        <button className=" text-blue-500 " onClick={initWebcam}>
+          Init camera
+        </button>
         {!hasCamera && <span className="text-red-600">Camera not found</span>}
       </div>
     </div>
