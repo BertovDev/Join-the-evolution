@@ -9,8 +9,6 @@ import { animate } from "motion";
 export default function GestureRecognizerComponent() {
   const [gesture, setGesture] = useState<GestureResult | null>(null);
   const loaderRef = useRef<HTMLDivElement | null>(null);
-  const [isWorkerCreated, setIsWorkerCreated] = useState<boolean>(false);
-  const [isCameraOn, setIsCameraOn] = useState<boolean>(false);
 
   const workerRef = useRef<Worker | null>(null);
 
@@ -19,12 +17,6 @@ export default function GestureRecognizerComponent() {
       [".loading-bar", { width: "100%" }],
       [".loading-info", { opacity: 0 }],
       [".camera-button", { opacity: 1 }],
-      // [
-      //   ".loader-container ",
-      //   {
-      //     opacity: 0,
-      //   },
-      // ],
     ];
 
     const init = () => {
@@ -89,15 +81,6 @@ export default function GestureRecognizerComponent() {
     []
   );
 
-  const handleCameraInit = () => {
-    const startSequence: any = [
-      [".camera-button", { opacity: 0 }],
-      ".start-button",
-      { opacity: 1 },
-    ];
-    animate(startSequence);
-  };
-
   return (
     <>
       <div
@@ -111,26 +94,10 @@ export default function GestureRecognizerComponent() {
             </h1>
             <span className="w-0 border loading-bar"></span>
           </div>
-          <button
-            onClick={() => setIsCameraOn(true)}
-            className="font-mono p-2 border rounded-xl z-50 camera-button opacity-0"
-          >
-            Init Camera
-          </button>
-          <button
-            onClick={() => animate(".loader-container", { opacity: 0 })}
-            className="font-mono p-2 border rounded-xl z-50  opacity-0 start-button"
-          >
-            Start
-          </button>
         </div>
       </div>
 
-      <Webcam
-        onCameraStart={handleCameraInit}
-        onFrame={processFrame}
-        isCameraOn={isCameraOn}
-      />
+      <Webcam onFrame={processFrame} />
       <GameManager gesture={gesture} />
     </>
   );
