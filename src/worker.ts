@@ -4,16 +4,17 @@ import { GestureRecognizer } from "@mediapipe/tasks-vision";
   console.log("Worker");
   try {
     const [module1] = await Promise.all([
-      import("./src/mediapipe/MediaPipeHands"),
+      import("./mediapipe/MediaPipeHands"),
       import("@mediapipe/tasks-vision"),
     ]);
     let recognizer: GestureRecognizer | null = null;
 
     console.log(recognizer);
-    self.onmessage = async function (event: MessageEvent) {
+
+    self.addEventListener("message", async function (event: MessageEvent) {
       const data = event.data;
 
-      console.log(data);
+      console.log("dAts" + data);
 
       if (data.action === "init") {
         console.log("init");
@@ -38,7 +39,7 @@ import { GestureRecognizer } from "@mediapipe/tasks-vision";
           self.postMessage(result);
         }
       }
-    };
+    });
   } catch (err) {
     console.log(err);
   }

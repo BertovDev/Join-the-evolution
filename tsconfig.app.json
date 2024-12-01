@@ -22,5 +22,5 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["src", "worker.ts"]
+  "include": ["src", "src/worker.ts"]
 }
