@@ -16,39 +16,25 @@ export default function GestureRecognizerComponent() {
     const init = () => {
       workerRef.current = new Worker(new URL("../worker.ts", import.meta.url));
       try {
-        // const recognizer = await CreateGestureRecognizer();
-
-        // setRecognizer(recognizer);
         console.log("Try worker ", workerRef.current);
         if (workerRef.current) {
-          // console.log("Init");
-
-          // workerRef.current.postMessage({ action: "init" });
+          workerRef.current.postMessage({ action: "init" });
 
           workerRef.current.addEventListener(
             "message",
             (event: MessageEvent) => {
-              const result = event.data as GestureResult;
-              if (
-                result.gesture === "Close_Fist" ||
-                result.gesture === "Open_Palm"
-              ) {
-                setGesture(result);
-              }
+              const result = event.data;
+
+              console.log(result);
+
+              // if (
+              //   result.gesture === "Close_Fist" ||
+              //   result.gesture === "Open_Palm"
+              // ) {
+              //   setGesture(result);
+              // }
             }
           );
-
-          // workerRef.current.onmessage = function (event: MessageEvent) {
-          //   const result = event.data as GestureResult;
-          //   if (
-          //     result.gesture === "Close_Fist" ||
-          //     result.gesture === "Open_Palm"
-          //   ) {
-          //     setGesture(result);
-          //   }
-          // };
-
-          workerRef.current.postMessage({ action: "init" });
         }
       } catch (err) {
         console.log(err);
