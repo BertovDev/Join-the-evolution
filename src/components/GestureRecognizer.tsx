@@ -1,40 +1,48 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import "../App.css";
 
 import Webcam from "./Webcam";
-import { GestureRecognizer } from "@mediapipe/tasks-vision";
 import { GestureResult } from "../types";
 import GameManager from "../GameManager";
+import { animate } from "motion";
 
 export default function GestureRecognizerComponent() {
-  const [recognizer, setRecognizer] = useState<GestureRecognizer | null>(null);
   const [gesture, setGesture] = useState<GestureResult | null>(null);
+  const loaderRef = useRef<HTMLDivElement | null>(null);
 
   const workerRef = useRef<Worker | null>(null);
 
   useEffect(() => {
-    setRecognizer(null);
-    const init = async () => {
-      workerRef.current = new Worker(new URL("./worker.ts", import.meta.url));
+    const sequence: any = [
+      [".loading-bar", { width: "100%" }],
+      [".loading-info", { opacity: 0 }],
+      [".camera-button", { opacity: 1 }],
+    ];
 
+    const init = () => {
+      workerRef.current = new Worker(new URL("../worker.ts", import.meta.url));
       try {
-        // const recognizer = await CreateGestureRecognizer();
-        // setRecognizer(recognizer);
+        console.log("Try worker ", workerRef.current);
         if (workerRef.current) {
-          // console.log("Init");
-
-          // workerRef.current.postMessage({ action: "init" });
-
-          workerRef.current.onmessage = function (event: MessageEvent) {
-            const result = event.data as GestureResult;
-            if (
-              result.gesture === "Close_Fist" ||
-              result.gesture === "Open_Palm"
-            ) {
-              setGesture(result);
-            }
-          };
-
           workerRef.current.postMessage({ action: "init" });
+
+          workerRef.current.addEventListener(
+            "message",
+            (event: MessageEvent) => {
+              const result = event.data;
+
+              if (result === "DONE") {
+                if (loaderRef.current) {
+                  animate(sequence);
+                }
+              } else if (
+                result.gesture === "Close_Fist" ||
+                result.gesture === "Open_Palm"
+              ) {
+                setGesture(result);
+              }
+            }
+          );
         }
       } catch (err) {
         console.log(err);
@@ -57,32 +65,38 @@ export default function GestureRecognizerComponent() {
       // if (!recognizer) return;
 
       try {
+        if (workerRef.current === null) {
+          console.log("Is null");
+        }
         const worker = workerRef.current;
-
         worker?.postMessage({
           action: "detectForVideo",
           frame: video,
           timestamp: timestamp,
         });
-
-        // const result: GestureResult = handleGesture(
-        //   recognizer,
-        //   video,
-        //   timestamp
-        // );
-
-        // if (result) {
-        //   setGesture(result);
-        // }
       } catch (err) {
         console.log(err);
       }
     },
-    [recognizer]
+    []
   );
 
   return (
     <>
+      <div
+        ref={loaderRef}
+        className="bg-[#0a0a0a] loader-container  w-full h-full absolute z-30"
+      >
+        <div className="flex flex-col h-full w-full  justify-center items-center">
+          <div className="flex flex-col loading-info">
+            <h1 className="text-xl font-mono">
+              Joining the glorious evolution
+            </h1>
+            <span className="w-0 border loading-bar"></span>
+          </div>
+        </div>
+      </div>
+
       <Webcam onFrame={processFrame} />
       <GameManager gesture={gesture} />
     </>

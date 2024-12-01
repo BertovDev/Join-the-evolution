@@ -1,3 +1,4 @@
+import { animate } from "motion";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 
 interface WebCamProps {
@@ -38,6 +39,7 @@ const Webcam: React.FC<WebCamProps> = ({ onFrame }) => {
   }, [onFrame]);
 
   useEffect(() => {
+    console.log("yea");
     requestAnimationFrame(processFrame);
   }, [processFrame]);
 
@@ -57,13 +59,17 @@ const Webcam: React.FC<WebCamProps> = ({ onFrame }) => {
         // offscreen.current = canvasRef.current?.transferControlToOffscreen();
 
         videoRef.current.addEventListener("loadeddata", createOffscreen);
+        animate(".camera-button", { opacity: 0 });
+        animate(".loader-container", { opacity: 0 });
       }
     } catch (err) {
       console.log(err);
+      setHasCamera(false);
     }
   };
 
   const createOffscreen = () => {
+    console.log("Yeah");
     if (videoRef.current) {
       offscreen.current = new OffscreenCanvas(
         videoRef.current?.videoWidth,
@@ -76,20 +82,28 @@ const Webcam: React.FC<WebCamProps> = ({ onFrame }) => {
     }
   };
 
-  useEffect(() => {
-    initWebcam();
-  }, []);
-
   return (
-    <div className="h-1/4 absolute top-0 left-0 z-10">
-      <div className="relative top-0 bottom-0 w-1/5 h-1/5 bg-red-200">
-        <video ref={videoRef} id="webcam" autoPlay playsInline muted></video>
-        {/* <canvas ref={canvasRef} id="canvas" className=""></canvas> */}
+    <>
+      <div className="h-1/4 absolute top-0 left-0 pl-2 z-40">
+        <div className="relative top-0 bottom-0 w-1/5 h-1/5 ">
+          <video ref={videoRef} id="webcam" autoPlay playsInline muted></video>
+        </div>
       </div>
-      <div className="flex flex-col justify-center  items-center">
-        {!hasCamera && <span className="text-red-600">Camera not found</span>}
+      <div className="absolute h-full m-auto left-0 right-0 z-50">
+        <div className="flex h-full  flex-col items-center justify-center">
+          <button
+            onClick={() => {
+              initWebcam();
+            }}
+            className="camera-button font-mono p-2 border rounded-xl z-50 camera-button opacity-0"
+          >
+            Init Camera
+          </button>
+
+          {!hasCamera && <span className="text-red-600">Camera not found</span>}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

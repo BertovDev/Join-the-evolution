@@ -1,17 +1,24 @@
 import { GestureRecognizer } from "@mediapipe/tasks-vision";
 
 (async () => {
+  console.log("Worker");
   try {
     const [module1] = await Promise.all([
-      import("../mediapipe/MediaPipeHands"),
+      import("./mediapipe/MediaPipeHands"),
       import("@mediapipe/tasks-vision"),
     ]);
+
+    // const { CreateGestureRecognizer, handleGesture } = await import(
+    //   "./mediapipe/MediaPipeHands"
+    // );
+
     let recognizer: GestureRecognizer | null = null;
 
-    self.onmessage = async function (event: MessageEvent) {
+    self.onmessage = async (event: MessageEvent) => {
       const data = event.data;
 
       if (data.action === "init") {
+        console.log("init");
         if (!recognizer) {
           const recognizerIsntance = await module1.CreateGestureRecognizer();
 
@@ -21,6 +28,9 @@ import { GestureRecognizer } from "@mediapipe/tasks-vision";
 
           recognizer = recognizerIsntance;
           console.log("Created new recognizer", recognizer);
+          self.postMessage("DONE");
+        } else {
+          console.log("recognizer is not set");
         }
       } else if (data.action === "detectForVideo") {
         if (recognizer) {
