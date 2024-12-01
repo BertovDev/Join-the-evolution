@@ -10,6 +10,7 @@ const Webcam: React.FC<WebCamProps> = ({ onFrame }) => {
   const context = useRef<OffscreenCanvasRenderingContext2D | null>();
   const lastVideoTime = useRef<number>(-1);
   const [hasCamera, setHasCamera] = useState(true);
+  const test = useRef(false);
 
   const hasMediaDevices = () => {
     return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
@@ -77,7 +78,11 @@ const Webcam: React.FC<WebCamProps> = ({ onFrame }) => {
   };
 
   useEffect(() => {
-    initWebcam();
+    if (test.current === true) {
+      initWebcam();
+    } else {
+      console.log("ñao");
+    }
   }, []);
 
   return (
