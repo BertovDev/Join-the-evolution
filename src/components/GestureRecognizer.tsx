@@ -14,11 +14,15 @@ export default function GestureRecognizerComponent() {
   useEffect(() => {
     setRecognizer(null);
     const init = async () => {
-      workerRef.current = new Worker(new URL("./worker.ts", import.meta.url));
-
       try {
+        workerRef.current = new Worker(
+          new URL("../../worker.ts", import.meta.url)
+        );
+
         // const recognizer = await CreateGestureRecognizer();
+
         // setRecognizer(recognizer);
+        console.log("Try worker ", workerRef.current);
         if (workerRef.current) {
           // console.log("Init");
 
@@ -57,25 +61,23 @@ export default function GestureRecognizerComponent() {
       // if (!recognizer) return;
 
       try {
-        const worker = workerRef.current;
-
-        worker?.postMessage({
-          action: "detectForVideo",
-          frame: video,
-          timestamp: timestamp,
-        });
-
+        // const worker = workerRef.current;
+        // worker?.postMessage({
+        //   action: "detectForVideo",
+        //   frame: video,
+        //   timestamp: timestamp,
+        // });
         // const result: GestureResult = handleGesture(
         //   recognizer,
         //   video,
         //   timestamp
         // );
-
         // if (result) {
         //   setGesture(result);
         // }
       } catch (err) {
         console.log(err);
+        console.log(video, timestamp);
       }
     },
     [recognizer]
