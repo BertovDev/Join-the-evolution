@@ -13,7 +13,7 @@ export default function GestureRecognizerComponent() {
 
   useEffect(() => {
     setRecognizer(null);
-    const init = async () => {
+    const init = () => {
       try {
         workerRef.current = new Worker(
           new URL("../../worker.ts", import.meta.url)

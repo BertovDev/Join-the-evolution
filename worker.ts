@@ -1,6 +1,7 @@
 import { GestureRecognizer } from "@mediapipe/tasks-vision";
 
 (async () => {
+  console.log("Worker");
   try {
     const [module1] = await Promise.all([
       import("./src/mediapipe/MediaPipeHands"),
@@ -8,6 +9,7 @@ import { GestureRecognizer } from "@mediapipe/tasks-vision";
     ]);
     let recognizer: GestureRecognizer | null = null;
 
+    console.log(recognizer);
     self.onmessage = async function (event: MessageEvent) {
       const data = event.data;
 
