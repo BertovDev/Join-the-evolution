@@ -2,7 +2,7 @@
 
 # Join the glorious evolution
 
-### Inspired in Arcane hextech gemstone, use you hand gestures to alterate the uniforms the shaders, disturbing the core and creating caos!
+### Inspired in Arcane hextech gemstone, use you hand gestures to alterate the shaders uniforms, disturbing the core and creating caos!
 
 * Open Palm: Increase particles speed.
 * Close fist: Alterate the core and create noise and unstability.
