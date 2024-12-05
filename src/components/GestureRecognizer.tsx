@@ -85,14 +85,17 @@ export default function GestureRecognizerComponent() {
     <>
       <div
         ref={loaderRef}
-        className="bg-[#0a0a0a] loader-container  w-full h-full absolute z-30"
+        className="bg-[#0a0a0a] loader-container w-full h-full absolute z-30"
       >
         <div className="flex flex-col h-full w-full  justify-center items-center">
-          <div className="flex flex-col loading-info">
+          <div className="flex flex-col h-full justify-center loading-info">
             <h1 className="text-xl font-mono">
               Joining the glorious evolution
             </h1>
             <span className="w-0 border loading-bar"></span>
+          </div>
+          <div className=" flex font-mono w-full justify-end p-2 text-yellow-400">
+            Tip: Reload the page if it takes too much time{" "}
           </div>
         </div>
       </div>
