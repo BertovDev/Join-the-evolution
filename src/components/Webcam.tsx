@@ -12,36 +12,43 @@ const Webcam: React.FC<WebCamProps> = ({ onFrame }) => {
   const lastVideoTime = useRef<number>(-1);
   const [hasCamera, setHasCamera] = useState(true);
 
+  const animationRef = useRef<number>();
+
   const hasMediaDevices = () => {
     return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
   };
 
-  const processFrame = useCallback(() => {
-    if (
-      videoRef.current &&
-      offscreen.current &&
-      videoRef.current.currentTime > 4
-    ) {
-      const currentTime = videoRef.current.currentTime;
-
-      if (currentTime > lastVideoTime.current) {
-        lastVideoTime.current = currentTime;
-
-        context.current?.drawImage(videoRef.current, 0, 0);
-        const imageBitmap: ImageBitmap | undefined =
-          offscreen.current?.transferToImageBitmap();
-
-        onFrame(imageBitmap, performance.now());
-      }
-    }
-
-    requestAnimationFrame(processFrame);
-  }, [onFrame]);
-
   useEffect(() => {
-    console.log("yea");
-    requestAnimationFrame(processFrame);
-  }, [processFrame]);
+    const processFrame = () => {
+      if (
+        videoRef.current &&
+        offscreen.current &&
+        videoRef.current.currentTime > 4
+      ) {
+        const currentTime = videoRef.current.currentTime;
+
+        if (currentTime > lastVideoTime.current) {
+          lastVideoTime.current = currentTime;
+
+          context.current?.drawImage(videoRef.current, 0, 0);
+          const imageBitmap: ImageBitmap | undefined =
+            offscreen.current?.transferToImageBitmap();
+
+          onFrame(imageBitmap, performance.now());
+        }
+      }
+
+      animationRef.current = requestAnimationFrame(processFrame);
+    };
+
+    processFrame();
+
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [onFrame]);
 
   const initWebcam = async () => {
     if (!hasMediaDevices) return;
