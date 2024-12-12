@@ -2,7 +2,7 @@ import { animate } from "motion";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 
 interface WebCamProps {
-  onFrame: (videoFrame: ImageBitmap | undefined, timestamp: number) => void;
+  onFrame: (videoFrame: HTMLVideoElement, timestamp: number) => void;
 }
 
 const Webcam: React.FC<WebCamProps> = ({ onFrame }) => {
@@ -34,7 +34,7 @@ const Webcam: React.FC<WebCamProps> = ({ onFrame }) => {
           const imageBitmap: ImageBitmap | undefined =
             offscreen.current?.transferToImageBitmap();
 
-          onFrame(imageBitmap, performance.now());
+          onFrame(videoRef.current, performance.now());
         }
       }
 

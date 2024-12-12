@@ -1,14 +1,21 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { createRef, useCallback, useEffect, useRef, useState } from "react";
 import "../App.css";
 
 import Webcam from "./Webcam";
 import { GestureResult } from "../types";
 import GameManager from "../GameManager";
 import { animate } from "motion";
+import { GestureRecognizer } from "@mediapipe/tasks-vision";
+import {
+  CreateGestureRecognizer,
+  handleGesture,
+} from "../mediapipe/MediaPipeHands";
 
 export default function GestureRecognizerComponent() {
   const [gesture, setGesture] = useState<GestureResult | null>(null);
   const loaderRef = useRef<HTMLDivElement | null>(null);
+
+  const [recognizer, setRecognizer] = useState<GestureRecognizer>();
 
   const workerRef = useRef<Worker | null>(null);
 
@@ -19,34 +26,36 @@ export default function GestureRecognizerComponent() {
       [".camera-button", { opacity: 1 }],
     ];
 
-    const init = () => {
-      workerRef.current = new Worker(new URL("../worker.ts", import.meta.url));
-      try {
-        console.log("Try worker ", workerRef.current);
-        if (workerRef.current) {
-          workerRef.current.postMessage({ action: "init" });
-
-          workerRef.current.addEventListener(
-            "message",
-            (event: MessageEvent) => {
-              const result = event.data;
-
-              if (result === "DONE") {
-                if (loaderRef.current) {
-                  animate(sequence);
-                }
-              } else if (
-                result.gesture === "Close_Fist" ||
-                result.gesture === "Open_Palm"
-              ) {
-                setGesture(result);
-              }
-            }
-          );
-        }
-      } catch (err) {
-        console.log(err);
-      }
+    const init = async () => {
+      // workerRef.current = new Worker(new URL("../worker.ts", import.meta.url));
+      // try {
+      //   console.log("Try worker ", workerRef.current);
+      //   if (workerRef.current) {
+      //     workerRef.current.postMessage({ action: "init" });
+      //     workerRef.current.addEventListener(
+      //       "message",
+      //       (event: MessageEvent) => {
+      //         const result = event.data;
+      //         if (result === "DONE") {
+      //           if (loaderRef.current) {
+      //             animate(sequence);
+      //           }
+      //         } else if (
+      //           result.gesture === "Close_Fist" ||
+      //           result.gesture === "Open_Palm"
+      //         ) {
+      //           console.log(result);
+      //           // setGesture(result);
+      //         }
+      //       }
+      //     );
+      //   }
+      // } catch (err) {
+      //   console.log(err);
+      // }
+      const gestureRecog = await CreateGestureRecognizer();
+      setRecognizer(gestureRecog);
+      animate(sequence);
     };
 
     init();
@@ -61,24 +70,34 @@ export default function GestureRecognizerComponent() {
   }, []);
 
   const processFrame = useCallback(
-    (video: ImageBitmap | undefined, timestamp: number) => {
-      // if (!recognizer) return;
+    (video: HTMLVideoElement, timestamp: number) => {
+      if (!recognizer) return;
 
-      try {
-        if (workerRef.current === null) {
-          console.log("Is null");
-        }
-        const worker = workerRef.current;
-        worker?.postMessage({
-          action: "detectForVideo",
-          frame: video,
-          timestamp: timestamp,
-        });
-      } catch (err) {
-        console.log(err);
+      const gestureResult: GestureResult = handleGesture(
+        recognizer,
+        video,
+        timestamp
+      );
+
+      if (gestureResult.gesture !== null) {
+        setGesture(gestureResult);
       }
+
+      // try {
+      //   if (workerRef.current === null) {
+      //     console.log("Is null");
+      //   }
+      //   const worker = workerRef.current;
+      //   worker?.postMessage({
+      //     action: "detectForVideo",
+      //     frame: video,
+      //     timestamp: timestamp,
+      //   });
+      // } catch (err) {
+      //   console.log(err);
+      // }
     },
-    []
+    [recognizer]
   );
 
   return (
